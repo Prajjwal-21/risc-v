@@ -128,27 +128,3 @@ The core is checked against the Spike reference model instruction by instruction
 
 Area, timing per corner, power and sign-off: `docs/results.md`.
 
-## Reproducing
-
-```sh
-make check-tools PHASE=8   # toolchain report, with install hints
-make submodules            # riscv-tests, uvm-core, riscv-isa-sim (Spike), riscv-dv
-make test                  # lint, every regression, co-simulation, lockstep, UVM, coverage
-make accept-phase7         # UVM, lockstep, riscv-dv, coverage, mutation checks
-make accept-phase8         # sky130 implementation (LibreLane in Docker)
-make results               # every regression and mutation plan whose result files the README reads
-make figures               # every figure in this README, and the README itself
-make wave TEST=build/directed/hz_load_use FROM=100 TO=200   # a waveform for Surfer
-```
-
-Seeds 101, 202 and 303 are used throughout. Any single run can be repeated with
-`make riscv-tests MEM=random SEED=202` and similar targets.
-
-## Documentation
-
-- `docs/architecture.md`: the design and verification plan of every phase, with results;
-- `docs/decisions.md`: every decision, with its rationale;
-- `docs/memory_map.md`: the address map and peripheral registers;
-- `docs/results.md`: physical-design results;
-- `PROGRESS.md`: phase status.
-# mini_riscv
