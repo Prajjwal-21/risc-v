@@ -126,5 +126,5 @@ The core is checked against the Spike reference model instruction by instruction
 **Layout (sky130).** The routed SoC rendered from its final GDS by KLayout: 2.33 mm² die, 41,246 standard cells and 4 SRAM macros; Fmax 52.1 MHz (typical corner). The dashed outlines are the four OpenRAM macros as placed in the routed DEF. Sign-off errors: Magic DRC 0, KLayout DRC 0, LVS 0 (docs/results.md).<br>
 <sub>configuration: sky130A, sky130_fd_sc_hd, 30 ns clock target; data: `build/pnr/soc/final/gds, build/results/pnr.json`; command: `make accept-phase8`</sub>
 
-Area, timing per corner, power and sign-off: `docs/results.md`.
+
 
