@@ -1,0 +1,84 @@
+{
+  "//": "LibreLane configuration: soc_top with both caches' arrays in sky130 OpenRAM macros (docs/architecture.md P8, D-051). Paths are relative to this file's copy in the work directory (scripts/pnr.py).",
+  "DESIGN_NAME": "soc_top",
+  "VERILOG_FILES": [
+    "dir::../rtl/pkg/riscv_pkg.sv",
+    "dir::../rtl/pkg/soc_pkg.sv",
+    "dir::../rtl/bus/axil_pkg.sv",
+    "dir::../rtl/bus/apb_pkg.sv",
+    "dir::../rtl/core/decoder.sv",
+    "dir::../rtl/core/regfile.sv",
+    "dir::../rtl/core/alu.sv",
+    "dir::../rtl/core/branch_unit.sv",
+    "dir::../rtl/core/forwarding_unit.sv",
+    "dir::../rtl/core/hazard_unit.sv",
+    "dir::../rtl/core/if_stage.sv",
+    "dir::../rtl/core/ex_stage.sv",
+    "dir::../rtl/core/mem_stage.sv",
+    "dir::../rtl/core/csr_file.sv",
+    "dir::../rtl/core/core_top.sv",
+    "dir::../rtl/cache/sram_wrapper.sv",
+    "dir::../rtl/cache/write_buffer.sv",
+    "dir::../rtl/cache/icache.sv",
+    "dir::../rtl/cache/dcache.sv",
+    "dir::../rtl/bus/mem_arbiter.sv",
+    "dir::../rtl/bus/axil_master.sv",
+    "dir::../rtl/bus/axil_interconnect.sv",
+    "dir::../rtl/bus/axil2apb.sv",
+    "dir::../rtl/periph/sync_fifo.sv",
+    "dir::../rtl/periph/sync_2ff.sv",
+    "dir::../rtl/periph/clint.sv",
+    "dir::../rtl/periph/plic.sv",
+    "dir::../rtl/periph/uart.sv",
+    "dir::../rtl/periph/spi_master.sv",
+    "dir::../rtl/periph_subsys.sv",
+    "dir::../rtl/soc_top.sv"
+  ],
+  "VERILOG_DEFINES": [
+    "SYNTHESIS",
+    "SKY130_SRAM"
+  ],
+  "USE_SLANG": true,
+  "//lint": "The PDK's SRAM behavioural models (read as blackboxes) use blocking assignments in clocked blocks; that is the PDK's code, not this project's (D-051).",
+  "LINTER_DISABLE_WARNINGS_BLACKBOX": ["UNDRIVEN", "UNUSEDSIGNAL", "BLKSEQ"],
+  "CLOCK_PORT": "clk_i",
+  "//clock": "30 ns (33 MHz). The SRAM macros launch read data on the falling clock edge, so the tag-compare and hit paths get half a period; a 20 ns trial ended with -5.1 ns of setup slack after CTS on those paths (D-051). Fmax is measured separately (pnr.py fmax).",
+  "CLOCK_PERIOD": 30,
+  "PNR_SDC_FILE": "dir::constraints.sdc",
+  "SIGNOFF_SDC_FILE": "dir::constraints.sdc",
+
+  "//floorplan": "1.55 mm x 1.5 mm die. The caches' 2 KB data arrays sit along the top edge and the tag arrays along the bottom edge, 50 um from the die edges, each turned so that its port-0 pins (bottom and left edges of the macro) face the logic in the middle band. The two data arrays are 82 um apart: a narrower channel left row pieces too short for a tap cell, whose n-wells floated and failed LVS (D-051).",
+  "FP_SIZING": "absolute",
+  "DIE_AREA": [0, 0, 1550, 1500],
+  "PL_TARGET_DENSITY_PCT": 45,
+  "//repair": "Buffer wires longer than 600 um in the design repair after placement: without it the routed design had nets up to 2.3 mm long with slews up to 2.1 ns against the 0.75 ns limit. The optional repair after global routing stays off: the SRAM macros' Liberty files give their inputs a 0.04 ns transition limit that no driver meets, which that step treats as a fatal error (D-051).",
+  "DESIGN_REPAIR_MAX_WIRE_LENGTH": 600,
+
+  "MACROS": {
+    "sky130_sram_2kbyte_1rw1r_32x512_8": {
+      "instances": {
+        "g_cache.u_icache.u_data.g_sky130.u_macro": {"location": [50, 1030], "orientation": "FN"},
+        "g_cache.u_dcache.u_data.g_sky130.u_macro": {"location": [815, 1030], "orientation": "N"}
+      },
+      "gds": ["pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds"],
+      "lef": ["pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef"],
+      "vh": ["pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v"],
+      "lib": {"*": ["pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib"]}
+    },
+    "sky130_sram_1kbyte_1rw1r_32x256_8": {
+      "instances": {
+        "g_cache.u_icache.u_tag.g_sky130.u_macro": {"location": [50, 50], "orientation": "S"},
+        "g_cache.u_dcache.u_tag.g_sky130.u_macro": {"location": [1020, 50], "orientation": "FS"}
+      },
+      "gds": ["pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"],
+      "lef": ["pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"],
+      "vh": ["pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"],
+      "lib": {"*": ["pdk_dir::libs.ref/sky130_sram_macros/lib/sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib"]}
+    }
+  },
+  "//gds": "KLayout writes the final GDS: Magic's stream-out duplicates the OpenRAM macros' sub-cells and leaves the originals as extra top cells, which breaks the later steps that need a single top cell (D-051).",
+  "PRIMARY_GDSII_STREAMOUT_TOOL": "klayout",
+  "PDN_MACRO_CONNECTIONS": [
+    "g_cache\\.u_.cache\\.u_(data|tag)\\.g_sky130\\.u_macro VPWR VGND vccd1 vssd1"
+  ]
+}

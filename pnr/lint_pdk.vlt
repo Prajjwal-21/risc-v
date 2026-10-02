@@ -1,0 +1,5 @@
+`verilator_config
+// make lint, physical-design configuration (D-051): the sky130 SRAM
+// behavioural models are PDK files, never edited here (like third_party/), so
+// their own warnings are waived. Warnings in this project's RTL still count.
+lint_off -file "*/sky130_sram_macros/verilog/*"

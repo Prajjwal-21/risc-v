@@ -1,0 +1,48 @@
+# =============================================================================
+# riscv-dv tests for this project (docs/architecture.md P7.4, D-049)
+# -----------------------------------------------------------------------------
+# Test types built from riscv-dv's base test list (third_party/riscv-dv/yaml/
+# base_testlist.yaml), within what riscv-dv's Python generator (pygen) can
+# produce: it cannot generate sub-programs (callstack_gen is not implemented),
+# the loop stream fails to randomize, the hazard stream is missing, the
+# multi-page and region-stress streams hang, and illegal-instruction and
+# ebreak generation crash (checked 2026-10-01, D-049). Programs are scaled to
+# 64 KB of main memory, run in machine mode, and end through riscv-dv's ecall
+# handler, which writes tohost. They are not self-checking: `make riscv-dv`
+# runs them under lockstep co-simulation with Spike.
+# gen_opts are the generator's options (pygen spells them --name=value).
+# --fix_sp=1 on every test: pygen reserves a random register as the stack
+# pointer but its load/store streams address through x2 (sp) itself, which is
+# then never initialised; without it every program with a load/store stream
+# ends at its first stack access with a store access fault (D-049).
+# No load/store-hazard test: for seeds 101 and 202 that stream can take x0 as
+# its base (`la zero, region_1+N`, which does not assemble).
+# =============================================================================
+- test: riscv_arithmetic_basic_test
+  gen_test: riscv_instr_base_test
+  gen_opts: >-
+    --fix_sp=1 --instr_cnt=1500 --num_of_sub_program=0
+    --directed_instr_0=riscv_int_numeric_corner_stream,4
+    --no_fence=1 --no_data_page=1 --no_branch_jump=1 --boot_mode=m --no_csr_instr=1
+
+- test: riscv_rand_instr_test
+  gen_test: riscv_instr_base_test
+  gen_opts: >-
+    --fix_sp=1 --instr_cnt=1500 --num_of_sub_program=0 --no_csr_instr=0
+    --directed_instr_0=riscv_jal_instr,4
+
+- test: riscv_jump_stress_test
+  gen_test: riscv_instr_base_test
+  gen_opts: >-
+    --fix_sp=1 --instr_cnt=1500 --num_of_sub_program=0 --directed_instr_1=riscv_jal_instr,10
+
+# The load/store stream: pygen computes the base address into one register and
+# accesses memory through another (e.g. `la s8, region_1+N` then
+# `lhu a2, -4(ra)`), so these programs end at the first stream access with a
+# load or store access fault (taken identically by the core and Spike). Kept
+# for that path; the other types carry the long random sequences.
+- test: riscv_load_store_test
+  gen_test: riscv_instr_base_test
+  gen_opts: >-
+    --fix_sp=1 --instr_cnt=1500 --num_of_sub_program=0
+    --directed_instr_0=riscv_load_store_rand_instr_stream,8
